@@ -4,7 +4,7 @@ import urlparse
 
 import requests
 
-from pycurl.logger import logger
+from py_curl.logger import logger
 
 
 __all__ = ['Loader']

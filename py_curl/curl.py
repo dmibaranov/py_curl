@@ -1,6 +1,6 @@
 import sys
 
-from pycurl.loader import Loader
+from py_curl.loader import Loader
 
 def curl(*args, **kwargs):
     loader = Loader(*args, **kwargs)
