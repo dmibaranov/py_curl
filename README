@@ -1,0 +1,10 @@
+About
+=====
+
+Python (a)sync modules loader. Based at idea from curl.js
+
+Usage
+=====
+
+$ python -m py_curl.curl
+Hello, World!
