@@ -15,7 +15,7 @@ class Downloader(object):
         if isinstance(deps, string_type):
             self.deps[0] = deps
         elif isinstance(deps, dict):
-            self.deps = deps
+            self.deps = deps.copy()
         elif hasattr(deps, '__iter__'):
             self.deps = dict(zip(enumerate(set(deps))))
 
