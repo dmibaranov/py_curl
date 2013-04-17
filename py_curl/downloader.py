@@ -11,13 +11,13 @@ LOOPS = []
 class Downloader(object):
 
     def __init__(self, deps={}, loop_type='sync', temp_dir=None):
-        self.dep_names = {}
+        self.deps = {}
         if isinstance(deps, string_type):
-            self.dep_names[0] = deps
+            self.deps[0] = deps
         elif isinstance(deps, dict):
-            self.dep_names = deps
-        #elif '__iter__' in dir(deps):
-        #    self.dep_names = dict(zip(enumerate(set(deps))))
+            self.deps = deps
+        elif hasattr(deps, '__iter__'):
+            self.deps = dict(zip(enumerate(set(deps))))
 
         self.loop_type = loop_type
         self.temp_dir = temp_dir
@@ -44,13 +44,12 @@ class Downloader(object):
         logger.debug('Downloading finished')
 
     def _load_deps_sync(self):
-        for psedo_name, dep_path in self.dep_names.copy().items():
-            kwargs = dict(dep=dep_path)
-            if isinstance(psedo_name, string_type):
-                kwargs.update(module_alias=psedo_name)
-            self._load_dep_sync(**kwargs)
+        for name, dep_path in self.deps.items():
+            module_path = self._load_dep_sync(dep_path)
+            if module_path:
+                self._add_module(module_path, module_alias=name)
 
-    def _load_dep_sync(self, dep, module_alias=None):
+    def _load_dep_sync(self, dep):
         logger.debug('Downloading %s dep' % dep)
         basename = os.path.basename(dep)
 
@@ -58,6 +57,7 @@ class Downloader(object):
 
         if not c.scheme or c.scheme == 'file':
             module_path = c.path
+
         elif c.scheme in ('http', 'https'):
             response = urlopen(dep)
 
@@ -66,11 +66,14 @@ class Downloader(object):
                 module_file.write(str(response.read()))
             module_path = temp_full_path
 
-        module_name = extract_module_name(basename)
-        if module_path:
-            self.modules[module_name] = dict(path=module_path)
-            if module_alias:
-                self.modules[module_name].update(alias=module_alias)
+        return module_path
+
+    def _add_module(self, module_path, module_alias):
+        filename = os.path.basename(module_path)
+        module_name = extract_module_name(filename)
+        self.modules[module_name] = dict(path=module_path)
+        if isinstance(module_alias, string_type):
+            self.modules[module_name].update(alias=module_alias)
 
 
 def extract_module_name(filename):
